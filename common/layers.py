@@ -159,11 +159,13 @@ class Embedding:
     def forward(self, idx):
         W, = self.params
         self.idx = idx
-        out = W[idx]
+        # 배치처리를 하므로 Win을 해당 단어의 인덱스로 슬라이싱
+        out = W[idx]  
         return out
 
     def backward(self, dout):
         dW, = self.grads
         dW[...] = 0
+        # 미분의 각 행을 해당 단어 인덱스 위치에 더함
         np.add.at(dW, self.idx, dout)
         return None
