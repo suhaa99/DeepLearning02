@@ -119,6 +119,7 @@ class SigmoidWithLoss:
         self.t = t
         self.y = 1 / (1 + np.exp(-x))
 
+        # np.c_ : col1 = l-y, col2 = y
         self.loss = cross_entropy_error(np.c_[1 - self.y, self.y], self.t)
 
         return self.loss
