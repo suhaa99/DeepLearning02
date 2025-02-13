@@ -154,6 +154,7 @@ def remove_duplicate(params, grads):
                 if params[i] is params[j]:
                     grads[i] += grads[j]  # 경사를 더함
                     find_flg = True
+                    # pop(j) : j번째 항을 출력후 제거
                     params.pop(j)
                     grads.pop(j)
                 # 가중치를 전치행렬로 공유하는 경우(weight tying)

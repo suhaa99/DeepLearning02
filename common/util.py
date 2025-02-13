@@ -292,7 +292,7 @@ def analogy(a, b, c, word_to_id, id_to_word, word_matrix, top=5, answer=None):
 
     count = 0
     for i in (-1 * similarity).argsort():
-        if np.isnan(similarity[i]):
+        if np.isnan(similarity[i]):  # isnan : 숫자인지
             continue
         if id_to_word[i] in (a, b, c):
             continue

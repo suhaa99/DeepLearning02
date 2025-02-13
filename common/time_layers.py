@@ -23,7 +23,7 @@ class RNN:
         x, h_prev, h_next = self.cache
 
         dt = dh_next * (1 - h_next ** 2)
-        db = np.sum(dt, axis=0)
+        db = np.sum(dt, axis=0)          # sum node
         dWh = np.dot(h_prev.T, dt)
         dh_prev = np.dot(dt, Wh.T)
         dWx = np.dot(x.T, dt)
@@ -37,7 +37,7 @@ class RNN:
 
 
 class TimeRNN:
-    def __init__(self, Wx, Wh, b, stateful=False):
+    def __init__(self, Wx, Wh, b, stateful=False):  # stateful=False : 1블럭에서 나온 출력이 2블럭으로 연결X
         self.params = [Wx, Wh, b]
         self.grads = [np.zeros_like(Wx), np.zeros_like(Wh), np.zeros_like(b)]
         self.layers = None
@@ -47,16 +47,20 @@ class TimeRNN:
 
     def forward(self, xs):
         Wx, Wh, b = self.params
-        N, T, D = xs.shape
-        D, H = Wx.shape
+        # N : batch size, T : time block, D : dense vector(입력벡터) 차원
+        N, T, D = xs.shape  # 3차원 : 행렬안에 벡터(embedding 거친후 벡터됨)
+        D, H = Wx.shape     # H : 은닉층 차원
 
         self.layers = []
+        # np.zeros 써도 상관없음
         hs = np.empty((N, T, H), dtype='f')
 
         if not self.stateful or self.h is None:
+            # 제로행렬 곱셈 = 0 --> 전달 안하겠다는 의미
             self.h = np.zeros((N, H), dtype='f')
 
         for t in range(T):
+            # * : []없애기
             layer = RNN(*self.params)
             self.h = layer.forward(xs[:, t, :], self.h)
             hs[:, t, :] = self.h
@@ -71,10 +75,10 @@ class TimeRNN:
 
         dxs = np.empty((N, T, D), dtype='f')
         dh = 0
-        grads = [0, 0, 0]
-        for t in reversed(range(T)):
+        grads = [0, 0, 0]   # Wx, Wh, b
+        for t in reversed(range(T)):  # T-1, T-2, ... , t
             layer = self.layers[t]
-            dx, dh = layer.backward(dhs[:, t, :] + dh)
+            dx, dh = layer.backward(dhs[:, t, :] + dh)  # 합산된 기울기
             dxs[:, t, :] = dx
 
             for i, grad in enumerate(layer.grads):
