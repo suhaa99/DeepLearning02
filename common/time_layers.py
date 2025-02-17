@@ -1,4 +1,6 @@
 # coding: utf-8
+import sys
+sys.path.append(r'C:/Users/장수하/OneDrive/문서/GitHub/DeepLearning02')
 from common.np import *  # import numpy as np (or import cupy as np)
 from common.layers import *
 from common.functions import sigmoid
@@ -153,7 +155,7 @@ class LSTM:
         do *= o * (1 - o)
         dg *= (1 - g ** 2)
 
-        dA = np.hstack((df, dg, di, do))
+        dA = np.hstack((df, dg, di, do))   # hstack : horizontal stack 옆으로 붙이기
 
         dWh = np.dot(h_prev.T, dA)
         dWx = np.dot(x.T, dA)
@@ -237,8 +239,8 @@ class TimeEmbedding:
         self.W = W
 
     def forward(self, xs):
-        N, T = xs.shape
-        V, D = self.W.shape
+        N, T = xs.shape       # N : batch size, T : time size
+        V, D = self.W.shape   # V : vocabulary size, D : dense size
 
         out = np.empty((N, T, D), dtype='f')
         self.layers = []
@@ -255,7 +257,7 @@ class TimeEmbedding:
 
         grad = 0
         for t in range(T):
-            layer = self.layers[t]
+            layer = self.layers[t]         # layers : embedding 층
             layer.backward(dout[:, t, :])
             grad += layer.grads[0]
 
@@ -270,7 +272,7 @@ class TimeAffine:
         self.x = None
 
     def forward(self, x):
-        N, T, D = x.shape
+        N, T, D = x.shape   # D : hidden size
         W, b = self.params
 
         rx = x.reshape(N*T, -1)
@@ -313,7 +315,7 @@ class TimeSoftmaxWithLoss:
 
         # 배치용과 시계열용을 정리(reshape)
         xs = xs.reshape(N * T, V)
-        ts = ts.reshape(N * T)
+        ts = ts.reshape(N * T)    # flatten
         mask = mask.reshape(N * T)
 
         ys = softmax(xs)
@@ -332,7 +334,9 @@ class TimeSoftmaxWithLoss:
         dx[np.arange(N * T), ts] -= 1
         dx *= dout
         dx /= mask.sum()
-        dx *= mask[:, np.newaxis]  # ignore_labelㅇㅔ 해당하는 데이터는 기울기를 0으로 설정
+        # newaxis : 차원 추가, 벡터 -> 행렬
+        # mask[:, np.newaxis] : 열벡터로 
+        dx *= mask[:, np.newaxis]  # ignore_label에 해당하는 데이터는 기울기를 0으로 설정
 
         dx = dx.reshape((N, T, V))
 
